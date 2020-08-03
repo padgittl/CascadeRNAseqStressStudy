@@ -1,0 +1,7 @@
+sample,condition
+CascadeA_DroughtHeat,DroughtHeat
+CascadeA_DroughtControl,DroughtControl
+CascadeB_DroughtControl,DroughtControl
+CascadeC_DroughtControl,DroughtControl
+CascadeB_DroughtHeat,DroughtHeat
+CascadeC_DroughtHeat,DroughtHeat

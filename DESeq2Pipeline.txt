@@ -1,0 +1,86 @@
+#### This analysis is performed in RStudio
+## R version 4.0.1 (2020-06-06) -- "See Things Now"
+
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+BiocManager::install("DESeq2")
+BiocManager::install("tximport")
+BiocManager::install("tximportData")
+BiocManager::install("genefilter")
+install.packages("hexbin")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("readr")
+install.packages("adegenet")
+install.packages("pheatmap")
+install.packages("RColorBrewer")
+library(genefilter)
+library(pheatmap)
+library(RColorBrewer)
+library(DESeq2)
+library(tximportData)
+library(tximport)
+library(dplyr)
+library(ggplot2)
+library(hexbin)
+library(readr)
+library(adegenet)
+
+> countData<- as.matrix(read.csv("gene_count_matrix.csv", row.names="gene_id"))
+> colData <-read.table("design.allSamples.csv", row.names = "sample", header = TRUE, sep = ",")
+> dds <- DESeqDataSetFromMatrix(countData = countData, colData = colData, design = ~ condition)
+Warning message:
+In DESeqDataSet(se, design = design, ignoreRank) :
+  some variables in design formula are characters, converting to factors
+> nrow(dds)
+[1] 82090
+> dds <-dds[ rowSums(counts(dds)) > 1, ]
+> dds <-DESeq(dds)
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+> results <- results(dds)
+> res<-results(dds)
+> head(res)
+log2 fold change (MLE): condition DroughtHeat vs DroughtControl 
+Wald test p-value: condition DroughtHeat vs DroughtControl 
+DataFrame with 6 rows and 6 columns
+              baseMean log2FoldChange     lfcSE      stat    pvalue      padj
+             <numeric>      <numeric> <numeric> <numeric> <numeric> <numeric>
+007569F.g10   67.93909      -0.736345  1.429560 -0.515085  0.606494  0.897675
+004691F.g16  150.53546       1.180157  0.789570  1.494684  0.134997  0.513449
+005502F.g12    1.10857      -1.073755  3.705066 -0.289807  0.771964        NA
+004404F.g5  1207.81370       0.565393  1.025418  0.551378  0.581374  0.886242
+000349F.g32  279.20799       1.055515  0.732018  1.441924  0.149324  0.538370
+001892F.g7    97.24678      -0.733829  0.950108 -0.772364  0.439899  0.819062
+> write.csv(res,"DEG.csv")
+> mcols(res, use.names = TRUE)
+DataFrame with 6 rows and 2 columns
+                       type                                                     description
+                <character>                                                     <character>
+baseMean       intermediate                       mean of normalized counts for all samples
+log2FoldChange      results log2 fold change (MLE): condition DroughtHeat vs DroughtControl
+lfcSE               results         standard error: condition DroughtHeat vs DroughtControl
+stat                results         Wald statistic: condition DroughtHeat vs DroughtControl
+pvalue              results      Wald test p-value: condition DroughtHeat vs DroughtControl
+padj                results                                            BH adjusted p-values
+> summary(res)
+
+out of 34544 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 655, 1.9%
+LFC < 0 (down)     : 1255, 3.6%
+outliers [1]       : 578, 1.7%
+low counts [2]     : 6698, 19%
+(mean count < 3)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+# to pull out normalized counts
+> sizefactors.all<-estimateSizeFactors(dds);
+> NormalizedCounts.all<-counts(sizefactors.all, normalized=TRUE)
+> NormalizedCounts.all<-as.data.frame(NormalizedCounts.all)
+> NormalizedCounts.all<-NormalizedCounts.all[apply(NormalizedCounts.all[,-1], 1, function(y) !all(y==0)),] #removes rows with all 0
+> write.csv(NormalizedCounts.all,"NormalizedCounts_rootDCxDH.csv")

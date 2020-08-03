@@ -1,0 +1,36 @@
+##### Remove adapters and require minimum read length (20bp)
+for f in *fastq; do echo SGE_Batch -c \"cutadapt -a GATCGGAAGAGCACACGTCTGAACTCCAGTCAC --minimum-length=20 -o `basename $f .fastq`.adaptorsRemoved.fastq $f\" -r `basename $f .fastq`_sge -q nucleotide; done > launch.sh
+
+
+#### Align RNAseq to reference assembly with STAR
+for f in *fastq; do echo SGE_Batch -c \"STAR --runMode alignReads --genomeLoad LoadAndKeep --soloStrand Forward --outSAMtype BAM Unsorted --genomeDir cascadePacBioMasked --readFilesIn $f --runThreadN 10 --outFileNamePrefix `basename $f .fastq`\" -r `basename $f .fastq`_sge -q nucleotide -P 10; done > launch.sh
+
+
+#### Assemble transcripts with Stringtie
+for f in *bam; do echo perl runStringtie.pl $f cascadeReferenceGenes.gff; done > launch.sh
+
+
+#### Merge transcript assemblies for each tissue/replicate with cuffmerge
+SGE_Batch -c "cuffmerge -g cascadeReferenceGenes.gff -s cascadeReferenceAssembly.fasta -p 8 -o allSamples allSamples.txt" -r cuffmerge_sge -q nucleotide -P 8
+
+## allSamples.txt contains paths to each transcript assembly -->
+/path/lane5-s026-index-GATCAC-Study1-16_S26_L005_R1_001.gtf
+/path/lane5-s027-index-ACCAGT-Study1-17_S27_L005_R1_001.gtf
+/path/lane5-s028-index-TGCACG-Study1-18_S28_L005_R1_001.gtf
+/path/lane5-s025-index-CAGCGT-Study1-13_S25_L005_R1_001.gtf
+/path/lane5-s029-index-ACATTA-Study1-20_S29_L005_R1_001.gtf
+/path/lane5-s030-index-GTGTAG-Study1-21_S30_L005_R1_001.gtf
+
+
+#### Create transcript fasta file
+SGE_Batch -c "gffread allSamples/merged.gtf -g cascadeReferenceAssembly.fasta -w transcripts.fasta" -r gffread_sge -q nucleotide
+
+
+#### Keep longest transcript per gene
+python filterFasta.py transcripts.fasta
+
+## produce this file --> longestTranscriptPerGene.fasta
+
+
+#### GTF to GFF3
+gffread -E allSamples/merged.gtf -o- > merged.gff3

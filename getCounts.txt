@@ -1,0 +1,15 @@
+#### Get counts 
+
+## script obtained from Stringtie: https://github.com/gpertea/stringtie/blob/master/prepDE.py
+
+python prepDE.py -i fileList.txt
+
+## fileList.txt format -->
+lane5-s026-index-GATCAC-Study1-16_S26_L005_R1_001       lane5-s026-index-GATCAC-Study1-16_S26_L005_R1_001.gtf
+lane5-s027-index-ACCAGT-Study1-17_S27_L005_R1_001       lane5-s027-index-ACCAGT-Study1-17_S27_L005_R1_001.gtf
+lane5-s028-index-TGCACG-Study1-18_S28_L005_R1_001       lane5-s028-index-TGCACG-Study1-18_S28_L005_R1_001.gtf
+lane5-s025-index-CAGCGT-Study1-13_S25_L005_R1_001       lane5-s025-index-CAGCGT-Study1-13_S25_L005_R1_001.gtf
+lane5-s029-index-ACATTA-Study1-20_S29_L005_R1_001       lane5-s029-index-ACATTA-Study1-20_S29_L005_R1_001.gtf
+lane5-s030-index-GTGTAG-Study1-21_S30_L005_R1_001       lane5-s030-index-GTGTAG-Study1-21_S30_L005_R1_001.gtf
+
+## produce these files --> gene_count_matrix.csv // transcript_count_matrix.csv
